@@ -29,4 +29,4 @@ Esse projeto está sob a licença MIT.
 ---
 Feito com ♥ by Rocketseat :wave: [Participe da nossa comunidade!](https://discord.gg/rocketseat)
 
-link do projeto: https://explorer-lab-1-psi.vercel.app/
+link do projeto: [RocketPay - Lucas](https://explorer-lab-1-psi.vercel.app/)
