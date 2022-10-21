@@ -3,23 +3,20 @@ import IMask from 'imask'
 
 const ccBgColor01 = document.querySelector(".cc-bg svg > g g:nth-child(1) path");
 const ccBgColor02 = document.querySelector(".cc-bg svg > g g:nth-child(2) path");
-const ccIcon = document.querySelector(".cc-logo span:nth-child(1) img");
-const ccLogo = document.querySelector(".cc-logo span:nth-child(3) img");
+const ccLogo = document.querySelector(".cc-logo span:nth-child(2) img");
 
 
 function setCardType(type) {
     const colors = {
     visa: ["#013BAD", "#FFB800"],
-    visaPremium: ["#080064", "#0F4B00"],
-    nubank: ["#2A005F", "#8F29DF"],
-    mastercard: ["#C69347", "#DF6F29"],
+    hipercard: ["#5A1600", "#680C00"],
+    mastercard: ["#2A005F", "#8F29DF"],
     elo: ["#002F8A", "#FF6200"],
     default: ["black", "gray"]
   }
 
   ccBgColor01.setAttribute("fill", colors[type][0]);
   ccBgColor02.setAttribute("fill", colors[type][1]);
-  ccIcon.setAttribute("src", `cc-marca-${type}.svg`)
   ccLogo.setAttribute("src", `cc-${type}.svg`);
 }
 
@@ -31,20 +28,30 @@ const cardNumberPattern = {
   mask: [
     {
       mask: "0000 0000 0000 0000",
-      regex: /^4\d{0-15}/,
+      regex: /^4\d{0,15}/,
       cardType: "visa",
     },
     {
-      mask: "0000 0000 0000 0000",
+      mask: "5000 0000 0000 0000",
       regex: /(^5[1-5]\d{0,2}|^22[2-9]\d|^2[3-7]\d{0,2})\d{0,12}/,
       cardType: "mastercard",
+    },
+    {
+      mask: "0000 0000 0000 0000",
+      regex: /^606282|^3841(?:[0|4|6]{1})0/,
+      cardType: "hipercard"
+    },
+    {
+      mask: "0000 0000 0000 0000",
+      regex: /^627780|^63(6297|6368|6369)|^65(0(0(3([1-3]|[5-9])|4([0-9])|5[0-1])|4(0[5-9]|[1-3][0-9]|8[5-9]|9[0-9])|5([0-2][0-9]|3[0-8]|4[1-9]|[5-8][0-9]|9[0-8])|7(0[0-9]|1[0-8]|2[0-7])|9(0[1-9]|[1-6][0-9]|7[0-8]))|16(5[2-9]|[6-7][0-9])|50(0[0-9]|1[0-9]|2[1-9]|[3-4][0-9]|5[0-8]))/,
+      cardType: "elo",
     },
     {
       mask: "0000 0000 0000 0000",
       cardType: "default",
     },
   ],
-  dispatch: function() {
+  dispatch: function(appended, dynamicMasked) {
     const number = (dynamicMasked.value + appended).replace(/\D/g,'');
     const foundMask = dynamicMasked.compiledMasks.find(function(item) {
       return number.match(item.regex)
@@ -54,13 +61,24 @@ const cardNumberPattern = {
   },
 }
 const cardNumberMasked = IMask(cardNumber, cardNumberPattern)
+cardNumberMasked.on("accept", () => {
+  const cardType = cardNumberMasked.masked.currentMask.cardType
+  setCardType(cardType)
+  updateCardNumber(cardNumberMasked.value)
+})
+
+function updateCardNumber(number) {
+  const ccNumber = document.querySelector(".cc-number")
+  ccNumber.innerText = number.length === 0 ? "1234 5678 9012 3456" : number
+}
+
 
 // card holder
 const cardHolder = document.querySelector("#card-holder")
-const cardHolderPattern = {
-  mask: "aaaaa"
-}
-const cardHolderMasked = IMask(cardHolder, cardHolderPattern)
+cardHolder.addEventListener("input", () => {
+  const ccHolder = document.querySelector(".cc-holder .value")
+  ccHolder.innerText = cardHolder.value.length === 0 ? "FULANO DA SILVA" : cardHolder.value
+})
 
 // expiration date 
 const expirationDate = document.querySelector("#expiration-date")
@@ -81,6 +99,10 @@ const expirationDatePattern = {
   }
 }
 const expirationDateMasked = IMask(expirationDate, expirationDatePattern)
+expirationDate.addEventListener("input", () => {
+  const ccExtraExpiration = document.querySelector(".cc-extra .cc-expiration .value")
+  ccExtraExpiration.innerText = expirationDate.value.length === 0 ? "02/32" : expirationDate.value
+}) 
 
 // security code
 const securityCode =  document.querySelector("#security-code")
@@ -88,4 +110,23 @@ const securityCodePattern = {
   mask: "000"
 }
 const securityCodeMasked = IMask(securityCode, securityCodePattern)
+securityCodeMasked.on("accept", () => {
+  updateSecurityCode(securityCodeMasked.value)
+})
+
+function updateSecurityCode(code) {
+  const ccExtraSecurity = document.querySelector(".cc-extra .cc-security .value")
+  ccExtraSecurity.innerText = code.length === 0 ? "123" : code
+}
+
+
+// evento do botão
+const addButton = document.querySelector("#add-card")
+addButton.addEventListener("click", () => {
+  alert("Cartão adicionado")
+})
+// desativando o reload do submit
+document.querySelector("form").addEventListener("submit", (event) => {
+  event.preventDefault()
+})
 
